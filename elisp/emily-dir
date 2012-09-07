@@ -1,0 +1,55 @@
+;;; -*-Emacs-Lisp-*-
+
+(defun ls-dir-to-list (dir dotfiles omit.&..)
+  "Return a list containing the file names found in directory DIR.
+If DOTFILES is t, files that start with a period will be included
+\(this implies \"ls -a\"\). If OMIT.&.. is also t, the special
+directories \".\" and \"..\" will not be returned."
+  (interactive "P")
+  (save-excursion
+
+    (and (not dotfiles) (setq omit.&.. t))
+    (setq dir (expand-file-name dir))
+    
+    (let
+	((name (generate-new-buffer-name "ls-output"))
+	 (buffer)
+	 (pos)
+	 (result)
+	 (status))
+
+      (setq buffer (generate-new-buffer name))
+
+      (setq status
+	    (if dotfiles
+		(call-process "ls" nil name nil "-a" dir)
+	      (call-process "ls" nil name nil dir)))
+
+      (cond
+       ((not (equal status 0))
+	(ding)
+	(message "ls %s failed! (%s)." dir status)
+	(sit-for 1))
+
+       (t
+	(set-buffer name)
+	(goto-char (point-min))
+
+	(while (< (point) (point-max))
+	  (setq pos (point))
+	  (end-of-line)
+	  (let
+	      ((file (buffer-substring pos (point))))
+
+	    (and
+	     (not
+	      (and
+	       dotfiles
+	       omit.&..
+	       (or (string-equal file ".") (string-equal file ".."))))
+	      (setq result (append result (list file))))
+	    
+	    (and (not (equal (point) (point-max))) (forward-char))))
+
+	(kill-buffer nil)))
+      result)))

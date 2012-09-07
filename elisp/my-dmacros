@@ -1,0 +1,212 @@
+#######
+# MODE:	c-mode 
+#######
+#######
+b	indent	curly braces (ideal for dmacro-wrap-line)
+{
+~@
+}
+#
+#######
+ife	indent	if/else statement
+if (~@){
+~(mark)
+}
+else {
+~(mark)
+}
+
+#
+#######
+ifd	indent	#ifdef/#endif (no prompting)
+#ifdef ~@
+~(mark)
+#endif
+
+#
+#######
+bc	indent	start c block comment.
+/*
+* ~@
+*/
+
+#
+#######
+if	indent	if statement
+if (~@){
+~(mark)
+}
+
+#
+#######
+default	indent	default switch statement
+default :{
+	~@
+break;
+}
+#
+#######
+id	expand	#ifdef/#endif (prompts for condition)
+#ifdef ~(prompt constant "#ifdef condition: ")
+~@
+#endif /* ~(prompt) */
+
+#
+#######
+mal	indent	call to malloc (prompts for var type)
+= (~(prompt type "Variable type: ") *) ~(dmacro malloc)(~@sizeof(~(prompt)));
+
+#
+#######
+if0	expand	#if 0 (ideal for use with dmacro-wrap-region)
+#if 0
+~@
+#endif /* 0 */
+
+#
+#######
+ide	expand	#ifdef/#else/#endif
+#ifdef ~(prompt constant "#ifdef condition: ")
+~@
+#else
+~(mark)
+#endif /* ~(prompt) */
+
+#
+#######
+i-reg	indent	register int i
+register int i;
+
+#
+#######
+while	indent	while statement
+while (~@){
+	~mark
+}
+
+#
+#######
+reg	indent	some register definition.
+register int ~@;
+
+#
+#######
+main	expand	an empty main() function with args
+int
+main(int argc, char **argv)
+{
+~@
+}
+
+#
+#######
+inc-string	expand	simple #include string
+#include "~@.h"
+#
+#######
+switch	expand	switch statement with case & default
+switch (~@){
+~(dmacro case)
+
+}
+
+#
+#######
+define	expand	
+#define 
+#
+#######
+p	indent	printf
+printf("~@\n"~mark);
+#
+#######
+lc	indent	start c line comment.
+/* ~@ */
+#
+#######
+inc-h	expand	#include .h file
+#include <~@.h>
+#
+#######
+fori	indent	for statement (increments variable i)
+for (i = 0; i < ~@; i++){
+	~mark
+}
+
+#
+#######
+dot-h	expand	stuff for the top of a .h file
+/* $Header$ */
+
+~@
+#
+#######
+inde	expand	#ifndef/#else/#endif
+#ifndef ~(prompt constant "#ifdef condition: ")
+~@
+#else
+~(mark)
+#endif /* ~(prompt) */
+
+#
+#######
+for	indent	interactive for statment
+for (~(prompt var "Variable: ") = 0; ~prompt < ~@; ~prompt++){
+	~mark
+}
+
+#
+#######
+dot-c	expand	stuff for the top of a .c file
+~(dmacro main t)
+#
+#######
+j-reg	indent	register int j
+register int j;
+
+#
+#######
+f	indent	fprintf
+fprintf(stderr, "~@\n"~mark);
+#
+#######
+case	indent	case/break
+case ~@:{
+	~mark
+break;
+}
+#
+#######
+ind	expand	#ifndef/#endif (prompts for condition)
+#ifndef ~(prompt constant "#ifndef condition: ")
+~@
+#endif /* ~(prompt) */
+
+#
+
+#######
+# MODE:	global 
+#######
+#######
+stamp	expand	user name and date
+Terry Jones (terry@santafe.edu)
+Santa Fe Institute
+~(month) ~((chron) 8 10 :pad nil), ~(year)  ~((hour) :pad nil):~min~ampm.
+#
+
+#######
+# MODE:	lisp-mode-abbrev-table emacs-lisp-mode lisp-interaction-mode 
+#######
+#######
+# MODE:	perl-mode 
+#######
+perlmain	expand	an empty mail perl file
+#!/usr/bin/perl -w
+
+use strict;
+
+~@
+
+exit(0);
+
+#

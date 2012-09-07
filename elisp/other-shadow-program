@@ -1,0 +1,154 @@
+From knabe@altar.ing.puc.cl Tue Jan  2 20:42:13 1996
+From: knabe@altar.ing.puc.cl (Fritz Knabe)
+Subject: Re: Find shadowing elisp files...
+Newsgroups: gnu.emacs.sources
+Date: 30 Dec 1995 19:00:18 -0300
+Organization: Pontificia Universidad Catolica de Chile
+Path: SantaFe!lynx.unm.edu!tesuque.cs.sandia.gov!ferrari.mst6.lanl.gov!newshost.lanl.gov!ncar!elroy.jpl.nasa.gov!swrinde!howland.reston.ans.net!newsfeed.internetmci.com!in1.uu.net!manquehue.scc.puc.cl!news
+Lines: 138
+Sender: knabe@altar.ing.puc.cl
+Message-ID: <0rbuoqkya5.fsf@altar.ing.puc.cl>
+References: <sc7mzyl7sb.fsf@wijiji.santafe.edu>
+NNTP-Posting-Host: altar.ing.puc.cl
+In-reply-to: terry@santafe.edu's message of 15 Dec 1995 07:29:40 -0700
+X-Newsreader: Gnus v5.0.13
+
+The package dup-el.el by Bob Weiner is also for finding shadowed elisp files.
+It is included below.
+
+Fritz
+
+;;!emacs
+;;
+;; LCD-ENTRY:    dup-el|Bob Weiner|weiner@mot.com|List duplicate .el files|06-02-95|1.2
+;;
+;; FILE:         dup-el.el
+;; SUMMARY:      Display a list of Emacs Lisp files duplicated in load-path.
+;; USAGE:        Emacs 19 Lisp Library
+;; KEYWORDS:     lisp, maint
+;;
+;; AUTHOR:       Bob Weiner
+;; ORG:          Motorola, Inc., PPG
+;;
+;; Copyright (C) 1995  Free Software Foundation, Inc.
+;;
+;; This file is part of InfoDock.
+;;
+;; DESCRIPTION:  
+;;
+;;   Use {M-x duplicates-list RET} to list duplicate Emacs Lisp files
+;;   within your current InfoDock or Emacs load-path.  It will display a list
+;;   of files which appear 2 or more times in load-path directories.  It will
+;;   also display a list of all Emacs Lisp files in the load-path together
+;;   with their directories, sorted by file name, so that you can look for
+;;   each duplicated file name and see the directories in which the
+;;   duplicates occur.
+;;
+;;   Use {M-x duplicates-matches RET} to display a listing of
+;;   matches for FILE-REGEXP in load-path order.  You are prompted for
+;;   FILE-REGEXP.
+;;
+;;   Utilizes GNU or UNIX sed, uniq, and sort commands.
+;;
+;; DESCRIP-END.
+
+;;; ************************************************************************
+;;; Public functions
+;;; ************************************************************************
+
+(defun duplicates-list ()
+  "Display a buffer of Emacs Lisp files found 2 or more times within load-path.
+Also display a list of all .el files in load-path, sorted by file name."
+  (interactive)
+  (let ((elisp-buf "*Sorted-Files*")
+	(dup-buf "*Duplicated-Files*"))
+    (with-output-to-temp-buffer elisp-buf
+      (duplicates-print-files))
+    (set-buffer elisp-buf)
+    (call-process-region (point-min) (point-max) "sort" t t)
+    (set-buffer (get-buffer-create dup-buf))
+    (setq buffer-read-only nil)
+    (erase-buffer)
+    (delete-other-windows)
+    (switch-to-buffer elisp-buf)
+    (goto-char (point-min))
+    (set-buffer-modified-p nil)
+    (split-window-vertically)
+    (append-to-buffer dup-buf (point-min) (point-max))
+    (switch-to-buffer dup-buf)
+    (call-process-region (point-min) (point-max) "sed" t t nil "-e" "s/ .*//")
+    (call-process-region (point-min) (point-max) "uniq" t t nil "-d")
+    (goto-char (point-min))
+    (set-buffer-modified-p nil)
+    (message "")))
+
+(defun duplicates-matches (file-regexp)
+  "Display a buffer listing the ordered load-path matches for FILE-REGEXP."
+  (interactive "sFind regexp matches for load-path file name: ")
+  (message "Searching for %s matches in load-path..." file-regexp)
+  (let ((elisp-buf "*Load-Paths*"))
+    (with-output-to-temp-buffer elisp-buf
+      (princ "Load-path matches for regexp ")
+      (prin1 file-regexp) (princ ":") (terpri)
+      (if (not (string-match "\\.elc?\\(\\\\'\\|\\$\\)?$" file-regexp))
+	  (setq file-regexp (concat file-regexp ".*\\.elc?$")))
+      (duplicates-print-paths file-regexp))
+    (set-buffer elisp-buf)
+    (goto-char (point-min))
+    (set-buffer-modified-p nil))
+  (message ""))
+
+;;; ************************************************************************
+;;; Private functions
+;;; ************************************************************************
+
+(defun duplicates-print-files (&optional directory-list)
+  "Print `lisp-file directory' lines to standard output.
+Optional argument is a list of Emacs Lisp directories to search; no
+argument searches directories in the `load-path' variable."
+  (or directory-list (setq directory-list load-path))
+  (let ((listed-directories)
+	(expanded-directory))
+    (mapcar
+     (function
+      (lambda (d)
+	;; Nil as an entry means use current directory.
+	(setq d (file-name-as-directory (or d "."))
+	      expanded-directory (expand-file-name d))
+	;; Omit non-existent, unreadable, or previously scanned directory
+	;; entries.
+	(if (not (and (file-exists-p d) (file-readable-p d)
+		      (not (member expanded-directory listed-directories))))
+	    nil
+	  (setq listed-directories
+		(cons expanded-directory listed-directories))
+	  (message "Listing %s ..." d)
+	  (mapcar
+	   (function
+	    (lambda (f) 
+	      (princ f) (princ " ") (princ d) (terpri)))
+	   (directory-files d nil "^[^=].*\\.el$")))))
+     directory-list))
+  (message ""))
+
+(defun duplicates-print-paths (file-regexp)
+  "Print each entry in load-path matching FILE-REGEXP to the standard output."
+  (mapcar
+   (function
+    (lambda (d)
+      ;; Nil as an entry means use current directory.
+      (setq d (file-name-as-directory (or d ".")))
+      ;; Omit non-existent or unreadable directory entries.
+      (if (not (and (file-exists-p d) (file-readable-p d)))
+	  nil
+	(mapcar
+	 (function
+	  (lambda (f) 
+	    (princ "\"") (princ d) (princ f) (princ "\"") (terpri)))
+	 (nreverse (directory-files d nil file-regexp nil t))))))
+   load-path))
+
+(provide 'dup-el)
+
+
+

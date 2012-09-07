@@ -1,0 +1,23 @@
+#!/bin/perl
+
+@disks = ('7', '8', '9', '10', '11', '12', '13', '14', '15', '16');
+
+foreach $d (@disks) {
+    $user_dir = "/net/sfi/disks/disk$d/Users";
+    if (! -d $user_dir){
+	print "Cannot find user directory $user_dir.\n";
+	next;
+    }
+
+    opendir(USERS, $user_dir) || die "Could not open dir $user_dir\n";
+    @users = grep(!/^\.$|^\.\.$/, readdir(USERS));
+    closedir(DIR);
+
+    #print "$user_dir:\n";
+    
+    foreach $u (@users) {
+	next unless -d "$user_dir/$u" && -r "$user_dir/$u/.emacs";
+	next if system("cmp -s $user_dir/$u/.emacs /net/user/terry/emacs/sfi-setup/old.emacs") >> 8;
+	print "$user_dir/$u\n";
+    }    
+}

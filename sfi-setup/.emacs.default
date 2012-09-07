@@ -1,0 +1,6 @@
+(load (concat
+       (expand-file-name "~user/.emacs")
+       "-"
+       emacs-major-version 
+       "." 
+       emacs-minor-version))

@@ -1,0 +1,348 @@
+;;; -*-Emacs-Lisp-*-
+
+;; This is a fairly minimal .emacs file for use with GNU Emacs version
+;; 19 (release 30 or later) at SFI.
+;;
+;; This file is written in the emacs lisp language (elisp). Note
+;; that comments are begun with a semicolon and continue to the end
+;; of the line.
+;;
+;; You shouldn't change this file unless you are confident that
+;; you know what you are doing. In any case, it might be a good 
+;; idea to make a backup copy before you try anything.
+;;
+;; There are some X resources at the very end of this file that you
+;; might like to experiment with.
+;;
+;; Terry Jones (terry@santafe.edu)
+;; 12/4/95
+;;
+
+(defvar i-want-vm nil "Use VM to read mail.")
+(defvar i-want-supercite nil "Use supercite mail citing.")
+(defvar i-want-modeline-time t "Show the time in the modeline.")
+(defvar i-want-modeline-time-and-date t "Show the time and date in the modeline.")
+(defvar i-want-modeline-host-name nil "Show the host name in the modeline.")
+(defvar i-want-modeline-line-numbers t "Show the line number in the modeline.")
+(defvar i-want-modeline-column-numbers nil "Show the column number in the modeline.")
+(defvar i-want-hilit nil "Use hilit19 to do coloring.")
+(defvar i-want-font-lock t "Use font lock to do coloring.")
+(defvar i-want-crypt t "Auto-decode compressed/encrypted files.")
+(defvar i-want-scroll-in-place nil "Vi-like scrolling.")
+(defvar i-want-auc-tex t "Use AUC tex mode on TeX/LaTeX files.")
+(defvar i-want-terrys-colors nil "Use Terry's color scheme.")
+(defvar i-want-electric-help nil "Put electric help on C-h.")
+(defvar i-want-electric-buffer nil "Use electric buffer mode (on C-x C-b).")
+(defvar i-want-menus t "Display a menu bar in X.")
+(defvar i-want-scroll-bars t "Display a scroll bar in X.")
+(defvar i-want-menus-in-text-mode nil "Display a menu bar in text mode.")
+(defvar i-want-region-highlighted t "Semi-permanent region highlighting.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;; NOTHING BELOW HERE SHOULD NEED TO BE TOUCHED. ;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;;;;;;;;;;;; LOOK TO SEE IF WE HAVE X & IF SO, IF WE HAVE COLORS ;;;;;;;;;;;;;
+
+(defvar running-x (equal window-system 'x) "True if we have X.")
+(defvar color-x   (and running-x (x-display-color-p)) "True if we have X & color.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SANITY CHECKING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(and color-x
+     i-want-hilit
+     i-want-font-lock
+     (progn
+       (ding)
+       ;; This CAN be done, it's just complicated.
+       (message "You cannot use both hilit and font-lock! Selecting font-lock.")
+       (setq i-want-hilit nil)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;; MISCELLANEOUS LOADS/REQUIRES ;;;;;;;;;;;;;;;;;;;;;;;;
+  
+(and i-want-crypt
+     (require 'crypt))
+
+(and i-want-scroll-in-place
+     (require 'scroll-in-place))
+
+
+;;;;;; EMACS APPEARANCE (modeline, menus, scrollbars, line/col numbers) ;;;;;;
+
+(or global-mode-string
+    (setq global-mode-string '("")))
+
+(and i-want-modeline-time-and-date
+     (setq display-time-day-and-date t)
+     (setq i-want-modeline-time t))
+     
+(and i-want-modeline-time
+     (display-time))
+
+(and i-want-modeline-host-name
+     (setq
+      global-mode-string
+      (append
+       global-mode-string 
+       (list
+	" "
+	(substring
+	 (system-name) 0 (string-match "\\." (system-name)))
+	"  "))))
+
+(and (not i-want-modeline-line-numbers)
+     (line-number-mode nil))
+
+(and i-want-modeline-column-numbers
+     (column-number-mode t))
+
+(if running-x
+    (progn
+      (and (not i-want-menus)
+	   (menu-bar-mode nil))
+      (and (not i-want-scroll-bars)
+	   (scroll-bar-mode nil)))
+  (and (not i-want-menus-in-text-mode)
+       (menu-bar-mode nil)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SUPERCITE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(if i-want-supercite
+    (progn
+      (autoload 'sc-cite-original "supercite" "Hookified Supercite 2.3" t)
+      (autoload 'sc-cite "supercite" "Interactive Supercite 2.3" t)
+      (add-hook 'mail-citation-hook 'sc-cite-original)
+      (add-hook
+       'sc-load-hook
+       '(lambda ()
+	  (setq
+	   sc-citation-leader        ""
+	   sc-citation-delimiter     ">"
+	   sc-citation-separator     " "
+	   sc-nested-citation-p      nil
+	   sc-downcase-p             nil
+	   sc-preferred-header-style 4
+	   sc-auto-fill-region-p     nil
+	   sc-fixup-whitespace-p     t)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; VM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(if i-want-vm
+    (progn
+      (autoload 'vm "vm" "VM mail reader" t)
+      (autoload 'vm-mail "vm" "VM mail reader" t)
+      (global-set-key "\C-x\m"   'vm-mail)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; TEX/LATEX ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(if i-want-auc-tex
+    (progn
+      (require 'tex-site)
+      (if color-x
+	  i-want-font-lock
+	  (add-hook 'LaTeX-mode-hook 'turn-on-font-lock))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; KEYBINDINGS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+;;(global-set-key [S-return] 'newline)
+;;(global-set-key [C-return] 'newline)
+;;(global-set-key [S-delete] 'backward-delete-char-untabify)
+;;(global-set-key [C-delete] 'backward-delete-char-untabify)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; X WINDOWS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+(if running-x
+    (progn
+      (and i-want-region-highlighted
+	   (transient-mark-mode t))
+
+      (if color-x
+	  (progn
+	    (if i-want-terrys-colors
+		;; NOTE - See the X resources at the bottom of this file.
+		;; The menu bar color, menu colors and menu fonts cannot be
+		;; set in this file. You'll need to use X resources for that.
+		(progn
+		  (set-background-color "cornflowerblue")
+		  (set-foreground-color "white")
+		  (set-cursor-color "red")
+		  (set-mouse-color "black")
+		  (set-face-background 'highlight "hotpink")
+		  (set-face-background 'region    "deepskyblue")
+		  (set-face-background 'modeline  "cyan") 
+		  (set-face-foreground 'modeline  "black")))
+		  
+	    (cond
+	     (i-want-hilit
+	      (require 'hilit19)
+
+	      (setq hilit-auto-rehighlight 'visible
+		    hilit-quietly t
+		    hilit-mode-enable-list '(not text-mode))
+
+	      (if i-want-terrys-colors
+		  (progn
+		    (setq hilit-background-mode 'dark)
+
+		    (hilit-translate
+		     comment                 'yellow/cornflowerblue
+		     include                 'white/royalblue3
+		     define                  'white/slateblue1
+		     defun                   'darkslateblue/yellow
+		     decl                    'black/skyblue
+		     type                    nil
+		     keyword                 'white/cyan3
+		     label                   'white/blue
+		     string                  'white/lightskyblue3
+		     crossref                'black/lightblue2
+		     summary-seen            'yellow/cornflowerblue
+		     summary-unread          'white/lightskyblue3
+		     summary-new             'white/cornflowerblue
+		     msg-subject             'darkslateblue/yellow
+		     msg-from                'darkslateblue/yellow
+		     msg-header              'yellow/cornflowerblue
+		     msg-quote               'yellow/cornflowerblue
+		     msg-separator           'white/royalblue3
+		     gnus-group-unsubscribed 'white/black
+		     gnus-group-empty        'white/royalblue3
+		     gnus-group-full         'white/cyan3
+		     gnus-group-overflowing  'yellow/cornflowerblue
+		     jargon-entry            'white/cyan3
+		     jargon-xref             'white
+		     jargon-keyword          'darkslateblue/yellow
+		     formula                 'darkslateblue/yellow))))
+
+	     (i-want-font-lock
+	      (autoload 'turn-on-lazy-lock "lazy-lock" "Turn on Lazy Lock mode.")
+	      (if i-want-terrys-colors
+		  (eval-after-load "font-lock"
+				   '(setq
+				     font-lock-face-attributes
+				     '((font-lock-comment-face       "yellow")
+				       (font-lock-string-face        "white" "lightskyblue3")
+				       (font-lock-keyword-face       "white" "cyan3")
+				       (font-lock-function-name-face "darkslateblue" "yellow")
+				       (font-lock-variable-name-face "darkslateblue" "yellow")
+				       (font-lock-type-face          "white" "cyan3")
+				       (font-lock-reference-face     "white" "steelblue")))))
+
+	      (add-hook
+	       'font-lock-mode-hook
+	       '(lambda ()
+		  (turn-on-lazy-lock)
+		  (require 'font-lock-menu)))))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MISCELLANEOUS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq
+ target-buffer                 (get-buffer "*scratch*")
+ auto-save-timeout             15
+ mark-even-if-inactive         t
+ default-major-mode            'text-mode
+ lpr-switches                  (list (concat "-P" (getenv "PRINTER"))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; MAIL ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(and color-x
+     i-want-font-lock
+     (add-hook 'mail-setup-hook 'turn-on-font-lock))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FILE FINDING ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+(setq
+ find-file-visit-truename      t
+ find-file-existing-other-name t)
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; FILE SUFFIXES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(setq
+ auto-mode-alist
+ (append
+  '(("\\.C$"  . c++-mode)
+    ("\\.cc$" . c++-mode)
+    ("\\.H$"  . c++-mode)
+    ("\\.hh$" . c++-mode)
+    ("\\.c$"  . c-mode)
+    ("\\.h$"  . c-mode)
+    ("\\.m$"  . objc-mode))
+  auto-mode-alist))
+
+;;;;;;;;;;;;;;;;;;;;;;;; C, CC AND OBJECTIVE C  MODES ;;;;;;;;;;;;;;;;;;;;;;;;
+
+(and color-x
+     i-want-font-lock
+     (add-hook 'c-mode-common-hook 'turn-on-font-lock))
+    
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; EMACS LISP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(and color-x
+     i-want-font-lock
+     (add-hook 'emacs-lisp-mode-hook 'turn-on-font-lock))
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; GNUS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  
+(setq gnus-default-article-saver 'gnus-summary-save-in-mail)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; ELECTRIC HELP ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;
+;; This puts an electric version of help onto C-h (where the normal
+;; version of help is bound).
+;;
+
+(if i-want-electric-help
+    (progn
+      (require 'ehelp)
+      (define-key global-map "\C-h" 'ehelp-command)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;; ELECTRIC BUFFER MODE ;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This puts an electric buffer listing onto C-x C-b (the place
+;; where buffer-list is usually found).
+;;
+
+(if i-want-electric-buffer
+    (progn
+      (load "ebuff-menu")
+      (define-key global-map "\C-x\C-b" 'electric-buffer-list)))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; X DEFAULTS ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;
+;; Finally, here are some X defaults that you might like to try.
+;; Comments in X resource files are begun with exclamation (!) marks.
+;;
+;; NOTE: You cannot uncomment these lines and leave them in this file.
+;;       They are X resources, not emacs lisp commands. If you don't
+;;       understand what this means, ask your system administrator.
+;;
+;; NOTE: If you have i-want-terrys-colors set to t, some of these
+;;       colors etc. (the ones that are commented out with !) are set
+;;       in the emacs lisp above. X default settings will take precedence
+;;       over the values in this .emacs file.
+;;
+;; !emacs.cursorType:              box
+;; !emacs.background:              cornflowerblue
+;; !emacs.foreground:              white
+;; !emacs.cursorColor:             red
+;; !emacs.pointerColor:            red
+;; Emacs.pane.menubar.background: steelblue
+;; Emacs.pane.menubar.foreground: white
+;; Emacs.pane.menubar.font:       9x15bold
+;; !
+;; !emacs.font: -sony-fixed-medium-r-normal-*-16-0-100-100-c-80-iso8859-1
+;; !emacs.font: -adobe-courier-medium-r-normal-*-14-*-*-*-m-*-iso8859-1
+;; !emacs.font: -schumacher-clean-medium-r-normal--16-160-75-75-c-80-iso8859-1
+;; !emacs.font: -misc-fixed-medium-r-normal--13-120-*-*-c-*-iso8859-1
+;; !emacs.font: -misc-fixed-medium-r-normal--15-140-*-*-c-*-iso8859-1
+;; !emacs.font: -adobe-courier-medium-r-normal--14-140-*-*-m-*-iso8859-1
+;; !

@@ -1,0 +1,256 @@
+To: staff@santafe.edu, onsite@santafe.edu, researchers-here@santafe.edu, researchers-away@santafe.edu, nearsite@santafe.edu, offsite@santafe.edu
+Subject: New emacs version - PLEASE READ IF YOU USE EMACS...
+FCC: /net/user/terry/mail/OUT
+--text follows this line--
+
+
+------------------------------------------------------------------------------
+--------------------------- TO ALL SFI EMACS USERS ---------------------------
+
+Please read at least part 1 of the following.
+
+There's no easy way around reading some of this, a few things have
+changed.  There are 6 sections below:
+
+1. General.
+2. If you want to use the default SFI emacs set up.
+3. If your ~/.emacs file contains...
+4. If you are a C/C++/Objc programmer.
+5. If you use font-lock mode with lazy-lock or defer-lock.
+6. If you read news in emacs via Gnus.
+
+If you are having emacs problems (not solved by the following), call
+me anytime on (505) 842-8377 (U-HATE-PP).
+
+Terry.
+
+
+------------------------------------------------------------------------------
+--------------------------------- 1. General ---------------------------------
+
+The problems (we encountered) with emacs 19.30 have been resolved.
+
+I have switched us back to 19.30 as the default.
+
+If you still encounter errors, please let me know, and use the old
+version (/network/software/packages/emacs/bin/emacs-19.29) in the meantime.
+
+
+------------------------------------------------------------------------------
+------------ 2. If you want to use the default SFI emacs set up. -------------
+
+If you already have a ~/.emacs file, make a backup copy of it. Then do this:
+
+cp ~user/User/Home/.emacs ~/.emacs
+
+Now read section 3.
+
+------------------------------------------------------------------------------
+-------------------- 3. If your ~/.emacs file contains... --------------------
+
+(load (concat
+       (expand-file-name "~user/.emacs")
+       "-"
+       emacs-major-version 
+       "." 
+       emacs-minor-version))
+
+
+You are using the SFI default emacs set up. You should not see error
+messages from your init file when you start emacs.
+
+You may, however, notice some differences in the behavior of emacs.
+
+For example, C mode will be slightly different (section 2).  Also, you
+will have some color highlighting in various modes (if you are using a
+color monitor).
+
+		       Customizing your setup:
+		       -----------------------
+
+I have made it relatively simple to customize various aspects of how
+the default SFI emacs setup behaves. To do this, you can insert lines
+in your ~/.emacs file BEFORE the existing line.
+
+These lines will all have the same form:
+
+(defvar variable-name value)
+
+The value will usually be one of "t" or "nil". The possible variables,
+their default settings (in parentheses), and brief purposes are:
+
+i-want-vm (nil):                      "Use VM to read mail."
+i-want-supercite (nil):               "Use supercite mail citing."
+i-want-modeline-time (t):             "Show the time in the modeline."
+i-want-modeline-time-and-date (t):    "Show the time and date in the modeline."
+i-want-modeline-host-name (nil):      "Show the host name in the modeline."
+i-want-modeline-line-numbers (t):     "Show the line number in the modeline."
+i-want-modeline-column-numbers (nil): "Show the column number in the modeline."
+i-want-hilit (nil):                   "Use hilit19 to do coloring."
+i-want-font-lock (t):                 "Use font lock to do coloring."
+i-want-crypt (t):                     "Auto-decode compressed/encrypted files."
+i-want-scroll-in-place (nil):         "Vi-like scrolling."
+i-want-auc-tex (t):                   "Use AUC tex mode on TeX/LaTeX files."
+i-want-terrys-colors (nil):           "Use Terry's color scheme."
+i-want-electric-help (nil):           "Put electric help on C-h."
+i-want-electric-buffer (nil):         "Use electric buffer mode (on C-x C-b)."
+i-want-menus (t):                     "Display a menu bar in X."
+i-want-scroll-bars (t):               "Display a scroll bar in X."
+i-want-menus-in-text-mode (nil):      "Display a menu bar in text mode."
+i-want-region-highlighted (t):        "Semi-permanent region highlighting."              
+
+So, for example, if you want the current column number to appear in
+the emacs mode line and you don't want to use the AUC TeX package,
+your ~/.emacs should contain:
+
+(defvar i-want-modeline-column-numbers t)
+(defvar i-want-auc-tex nil)
+(load (expand-file-name "~user/.emacs"))
+
+Note that you can further customize your emacs setup (if you know how)
+by adding lines to your ~/.emacs (probably after the above). If you
+really know what you're doing, you can always copy the ~user/.emacs to
+your own ~/.emacs. Once you do that though, you're more on your own.
+
+If you are unsure about what the above variables will affect, ask me.
+At some point I may type in a description of what does what. For now,
+hopefully, the names will give you some indication.
+
+The advantage to using this default .emacs method is that when things
+change in emacs, I can install the new version and update the
+~user/.emacs file so that things will work for everyone using this
+scheme.
+
+
+------------------------------------------------------------------------------
+------------------- 4. If you are a C/C++/Objc programmer --------------------
+
+Emacs 19.30 comes with the new cc-mode installed instead of the old
+c-mode. The new cc-mode is vastly better (though you may find it
+slower).
+
+I recommend that everyone at SFI change to the new mode.
+
+Whether you decide to change or not, if you have customized your C
+setup at all, you will have to make some changes to your ~/.emacs if
+you are not using the default SFI setup. This is because the variables
+controlling C indentation etc. have different names (and are far more
+numerous) in cc-mode than those in c-mode.
+
+Because I installed the new cc-mode at SFI some months ago and some
+people have been using it, you can be in one of the following
+categories:
+
+1) Never used cc-mode at SFI, and
+   a) Want to continue using the old c-mode.
+   b) Want to switch to cc-mode.
+
+2) Have used cc-mode at SFI prior to this announcement, and
+   a) Want to continue using cc-mode.
+   b) Want to go back to c-mode.
+
+Here's what you could/should do for each of these cases:
+
+                                ----- 1a -----
+
+See me in my office after school.
+
+                                ----- 1b -----
+
+Make a backup copy of your current ~/.emacs file.
+
+Take out lines in your ~/.emacs that configure the old c-mode. These
+look like (for example):
+
+     (setq c-indent-level 4)
+     (setq c-continued-statement-offset 4)
+     (setq c-brace-offset 0)
+     (setq c-continued-brace-offset - 4)
+     (setq c-brace-imaginary-offset 0)
+     (setq c-argdecl-indent 0)
+     (setq c-label-offset 0)
+
+Put something like the following in your ~/.emacs
+
+  (add-hook
+   'c-mode-common-hook
+   '(lambda ()
+      (setq
+       c-basic-offset 4
+       c-inhibit-startup-warnings-p nil)
+      (c-set-offset 'case-label           '+)
+      (c-set-offset 'label                 0)
+      (c-set-offset 'statement-case-intro '+)
+      (c-set-offset 'knr-argdecl-intro     0)
+      (c-set-offset 'statement-cont       'c-lineup-math)))
+
+These are just the C settings I use. You can look up documentation for
+variables via C-h v. You can find documentation on cc-mode via C-h i.
+
+                                ----- 2a -----
+
+To get cc-mode to work in emacs 19.29 or earlier, there were various
+things you needed to put into your ~/.emacs to get rid of the old
+c-mode. You can now remove those. So delete the following lines (or
+their equivalents):
+
+    (fmakunbound 'c-mode)
+    (makunbound  'c-mode-map)
+    (fmakunbound 'c++-mode)
+    (makunbound  'c++-mode-map)
+    (makunbound  'c-style-alist)
+
+    (autoload 'c-mode    "cc-mode"  "C Editing Mode" t)
+    (autoload 'c++-mode  "cc-mode"  "C++ Editing Mode" t)
+    (autoload 'objc-mode "cc-mode"  "Objective-C Editing Mode" t)
+
+                                ----- 2b -----
+
+See me in my office after school.
+
+
+------------------------------------------------------------------------------
+--------- 5. If you use font-lock mode with lazy-lock or defer-lock ----------
+
+A new version of lazy-lock was recently released. It is far faster
+than the previous version and it also incorporates the old defer-lock
+mode. If you have been using defer-lock with lazy-lock, you will need
+to get rid of all references to defer-lock-mode, defer-lock.el,
+turn-on-defer-lock etc. They no longer exist.
+
+Also note that some important things have changed in lazy-lock
+mode:
+
+ + The meaning of lazy-lock-minimum-size has been altered.
+ + The variable defer-lock-defer-time has changed to lazy-lock-defer-time.
+ + The variable lazy-lock-continuity-time no longer exists.
+ + The variable lazy-lock-invisible-foreground no longer exists.
+ + The variable font-lock-background-mode no longer exists.
+
+This is just a summary. Check the comments at the start of
+/network/software/packages/emacs/share/emacs/site-lisp/lazy-lock.el
+for details.
+
+
+------------------------------------------------------------------------------
+------------------- 6. If you read news in emacs via Gnus --------------------
+
+If you have been using the ding-gnus (Gnus version 5.0.X) that I
+recently installed, you can take the following out of your ~/.emacs
+since Gnus 5 comes with emacs 19.30:
+
+    (setq
+     load-path (append
+     (list "/network/software/packages/emacs/share/emacs/site-lisp/ding-gnus")
+          load-path)))
+
+
+If you have not already switched to Gnus 5, you don't have to do anything.
+Gnus 5 is supposed to be a drop-in replacement for the old Gnus.
+
+Check out the documentation for Gnus in info (using C-h i). There is a
+top-level Gnus node. There's a lot of new stuff in Gnus 5, including
+the ability to do adaptive news article scoring. Nelson uses this and
+says it is great.
+
+------------------------------------------------------------------------------

@@ -1,0 +1,434 @@
+;; -*-Emacs-Lisp-*-
+
+;;
+;; This is a fairly minimal .emacs file for use with GNU Emacs 
+;; version 19 at SFI. The first part of this file contains basic
+;; things that should be helpful and inoffensive to most emacs
+;; users. The second part, which is entirely commented out, contains
+;; further possibilities, some of which may not be considered
+;; helpful.
+;;
+;; This file is written in the emacs lisp language (elisp). Note
+;; that comments are begun with a semicolon and continue to the end
+;; of the line.
+;;
+;; You shouldn't change this file unless you are confident that
+;; you know what you are doing. In any case, it might be a good 
+;; idea to make a backup copy before you try anything.
+;;
+;; There are some X resources at the very end of this file that you
+;; might like to experiment with.
+;;
+;; Terry Jones (terry@santafe.edu)
+;; 8/31/93
+;;
+
+;;
+;; -------------------------------------
+;; PART ONE - BASIC SETUP FOR ALL USERS.
+;; -------------------------------------
+;;
+
+;;
+;; Set up the mode line so that it contains the name of the machine
+;; the emacs is running on.
+;;
+(or global-mode-string (setq global-mode-string '("")))
+(setq global-mode-string
+      (append 
+       global-mode-string 
+       (list " " 
+	     (substring (system-name) 0 (string-match "\\." (system-name)))
+	     "  ")))
+  
+;;
+;; Make emacs display the region (when it is "active") in a highlighted color.
+;;
+(transient-mark-mode t)
+(setq mark-even-if-inactive t)
+
+;;
+;; Make selections that you make with the mouse behave like other
+;; X clients (like xterm). Double and triple click work too.
+;;
+(load "mouse-sel")
+
+;;
+;; Put the time, date, load level and mail indicator into the mode line.
+;;
+(display-time)
+(setq display-time-day-and-date t)
+
+;;
+;; Avoid problems with symbolic links making files appear to have more than
+;; one name. With these, emacs chases down all symbolic links to get the real
+;; file name of all files visited.
+;;
+(setq find-file-visit-truename t)
+(setq find-file-existing-other-name t)
+
+;;
+;; Make it so that emacs waits for you to be idle for 5 seconds before it
+;; does an auto-save. Emacs 19 will not interrupt you to auto-save if you
+;; are typing.
+;;
+(setq auto-save-timeout 5)
+
+;;
+;; Set a default mode to be text (rather than emacs lisp).
+;;
+(setq default-major-mode 'text-mode)
+
+;;
+;; Don't display the emacs startup message.
+;;
+(setq inhibit-startup-message nil)
+
+;;
+;; Set command line arguments so that M-x lpr-buffer and lpr-region
+;; will work as you'd hope (if you have a PRINTER environment variable
+;; set).
+;;
+(setq lpr-switches (list (concat "-P" (getenv "PRINTER"))))
+
+;;
+;; Arrange for emacs to display the buffer's line number in the mode
+;; line (e.g. "L86" on the right hand end of the mode line).
+;;
+(add-hook 'find-file-hooks '(lambda () (line-number-mode 1)))
+(add-hook 'find-file-not-found-hooks '(lambda () (line-number-mode 1)))
+
+;;
+;; Some variables for reading news via M-x gnus.
+;;
+
+;;
+;; If you read an article in group X and it was also
+;; posted to group Y that you also read, then when you
+;; come to read group Y, the article will be treated
+;; as already read.
+;;
+(setq gnus-use-cross-reference t)
+
+;;
+;; The directory into which articles should be saved by default.
+;;
+(setq gnus-article-save-directory (expand-file-name "~/News"))
+
+;;
+;; The method by which articles should be saved. This uses a normal
+;; mail-like format, as opposed to an RMAIL (or anything else) format.
+;;
+(setq gnus-default-article-saver 'gnus-summary-save-in-mail)
+
+
+;;
+;; --------------------------------
+;; PART TWO - SOME ADVANCED OPTIONS
+;; --------------------------------
+;;
+;; This entire section is commented out. Most of it is useful, but
+;; it's not possible to predict who will find what useful and I
+;; don't want to give it all to everyone by default. If you uncomment
+;; a section, make sure that the parentheses match.
+;;
+;;
+;; In an attempt (probably vain) to forestall questions about what
+;; these things do, here is a hint on how to find that sort of thing
+;; out for yourself.
+;;
+;; C-h f   can be used to find a description of an emacs function.
+;; C-h v   can be used to find a description of an emacs variable.
+;; C-h i   can be used to start the emacs info program which can tell
+;;         you everything you need to know about emacs.
+;;
+;; If you are wondering what a certain package does, try looking at the 
+;; load-path variable. It will show you a list of directories on your
+;; system in which you will probably be able to find the source of the
+;; package. Look in the appropriate file and read the comments in it. 
+;; Often these will answer your questions. For instance, at SFI, the 
+;; standard Emacs 19 lisp files can be found in 
+;; /network/software/packages/emacs-19/lib/emacs/19.19/lisp
+;; and so to find out about the bookmark package, you could look in the
+;; bookmark.el file in that directory. NOTE that the 19.19 in the above
+;; will change as new versions of emacs are released. You can find the
+;; current version with M-x version.
+;;
+;; To see what sorts of things are new in Emacs 19, click on Emacs News
+;; in the Help menu at the top of your screen.
+;;
+
+;;
+;; Append your own emacs lisp directory (here in ~/elisp) to the load-path
+;; variable (you may prefer to prepend it).
+;;
+;(setq load-path (append load-path (list (expand-file-name "~/elisp"))))
+
+;;
+;; Here are some fairly standard settings for using supercite. 
+;; Supercite (or sc) is used to produce citations that look like
+;;
+;; "Joe" = joe@cs.alberta.edu (Joe Culberson)
+;; "Pam" = pam@unm.edu (Pam Fredericks)
+;;
+;; Joe> I said X
+;; Pam> See what Joe said?
+;;
+;(autoload 'sc-cite-original "sc" "Hookified Supercite 2.3" t)
+;(autoload 'sc-cite "sc" "Interactive Supercite 2.3" t)
+;(add-hook 'mail-yank-hooks 'sc-cite-original)
+;(add-hook 'sc-pre-hook '(lambda () (setq mark-active t)))
+;(setq sc-citation-leader "")
+;(setq sc-citation-delimiter ">")
+;(setq sc-citation-separator " ")
+;(setq sc-nested-citation-p nil)
+;(setq sc-downcase-p nil)
+;(setq sc-preferred-header-style 4)
+;(setq sc-auto-fill-region-p t)
+;(setq sc-fixup-whitespace-p t)
+
+;;
+;; Here are some variable settings if you want to use VM (view mail) to read
+;; your mail. This assumes that you have a directory called ~/mail in which
+;; you keep your mail folders. Incoming mail will be stored by VM in
+;; ~/mail/INBOX
+;;
+;; NOTE: emacs does not come with VM - you have to get it yourself.
+;; This is very easy, ask your system manager to do it.
+;;
+;(setq vm-flush-interval t)
+;(setq vm-primary-inbox (expand-file-name "~/mail/INBOX"))
+;(setq vm-folder-directory (expand-file-name "~/mail/"))
+;(setq vm-crash-box (expand-file-name "~/mail/crash-box"))
+;(setq vm-inhibit-startup-message t)
+;(setq vm-delete-after-saving t)
+;(setq vm-move-after-deleting t)
+;(setq vm-search-using-regexps t)
+;(setq vm-gargle-uucp t)
+;(setq vm-startup-with-summary 1)
+;(setq vm-mutable-windows t)
+;(setq vm-preview-lines nil)
+;(setq vm-summary-format "%3n %a %-17.17F (%-15.15f) %3m %2d %3l/%-5c \"%s\"\C-j")
+;(setq vm-visible-headers '("^From" "^From " "^Subject" "^Date" "^To"))
+;(setq vm-in-reply-to-format "Your message at %h on %w, %d %m %y")
+;(setq vm-mail-window-percentage 60)
+;(setq vm-included-text-prefix "> ")
+
+;;
+;; Now load vm. You may as well since you'll probably use it each time
+;; you start an emacs. We put vm-mail onto C-x m (where mail usually is).
+;;
+;(load "vm")
+;(define-key global-map "\C-x\m" 'vm-mail)
+
+;;
+;; This will load (if it's not already loaded) the crypt package.
+;; This will let you visit both encrypted and compressed files
+;; without having to first decrypt or uncompress in the shell. Note
+;; that the file remains encrypted or compressed on disk. Emacs
+;; re-encrypts or re-compresses when you write the buffer out. It's useful!
+;(require 'crypt)
+
+;;
+;; This puts an electric version of help onto C-h (where the normal
+;; version of help is bound).
+;;
+;(require 'ehelp)
+;(define-key global-map "\C-h" 'ehelp-command)
+
+;;
+;; This puts an electric buffer listing onto C-x C-b (the place
+;; where buffer-list is usually found).
+;;
+;(load "ebuff-menu")
+;(define-key global-map "\C-x\C-b" 'electric-buffer-list)
+
+;;
+;; This keeps track of where you were in each file that you visit. The 
+;; next time you visit the file, you'll start where you left off. It's
+;; nice, but it's not always what you want and it takes time loading and
+;; saving when you start/stop emacs.
+;;
+;(load "saveplace")
+
+;;
+;; Set things up to use bookmarks to keep track of some special locations
+;; in files.
+;;
+;(global-set-key "\C-cb" 'bookmark-map)
+;(autoload 'bookmark-map "bookmark" "Bookmarks" t 'keymap)
+
+;;
+;; The following will be done for you if you are running X
+;;
+
+;(if (equal window-system 'x)
+;    (progn
+;
+;      ;;
+;      ;; Load a library that shows matching parenthesis.
+;      ;;
+;      (load "paren")
+;
+;      ;;
+;      ;; Load the highlighting package. This can be used to good effect
+;      ;; to make your programs, tex, Makefiles etc have different colors
+;      ;; and fonts according to content.
+;      ;;
+;      (load "hilit19")
+;
+;      ;;
+;      ;; These affect highlighting in various minor ways.
+;      ;;
+;      (setq hilit-auto-rehighlight 'visible)
+;      (setq hilit-quietly t)
+;      (setq hilit-mode-enable-list '(not text-mode))
+;
+;      ;;
+;      ;; The following sets up some pretty obnoxious colors for various
+;      ;; things that you'll find in programs and tex files etc. Have a look
+;      ;; and then change the colors to something more palatable.
+;      ;; The color before the slash is the foreground. The color after
+;      ;; is the background.
+;      ;;
+;      (hilit-translate comment  'white/chocolate)
+;      (hilit-translate include  'yellow/seagreen)
+;      (hilit-translate define   'forestgreen/yellow)
+;      (hilit-translate defun    'black/skyblue)
+;      (hilit-translate decl     'darkslateblue/yellow)
+;      (hilit-translate type     'green)
+;      (hilit-translate keyword  'white/magenta)
+;      (hilit-translate label    'darkorange/blue)
+;      (hilit-translate string   'red/wheat)
+;      (hilit-translate crossref 'black/orange)
+;
+;      ;;
+;      ;; This changes some of the colors of the things you'll find
+;      ;; on your screen. Try them and you'll see.
+;      ;;
+;      (set-face-background 'highlight "green")
+;      (set-face-background 'region    "lightgrey")
+;      (set-face-background 'modeline  "cyan") 
+;      (set-face-foreground 'modeline  "black")))
+
+;;
+;; This stops C-n from adding newlines at the end of a buffer
+;;
+;(setq next-line-add-newlines nil)
+
+;;
+;; Where to keep a copy of the mail you send.
+;;
+;(setq mail-archive-file-name (expand-file-name "~/mail/OUT"))
+
+;;
+;; Have mail aliases expanded as soon as you type them into the
+;; To: line in mail (note that you need to follow them with a 
+;; non-word character (like a space) to get them expanded).
+;;
+;(add-hook 'mail-setup-hook 'mail-abbrevs-setup)
+
+;;
+;; Go into auto fill mode when visitng a file in text mode.
+;;
+;(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+;;
+;; Arrange to go into abbrev mode when visiting a new or existing file.
+;;
+;(add-hook 'find-file-hooks '(lambda () (abbrev-mode 1)))
+;(add-hook 'find-file-not-found-hooks '(lambda () (abbrev-mode 1)))
+
+;;
+;; Enable some commands by default.
+;;
+;(put 'eval-expression 'disabled nil)
+;(put 'upcase-region 'disabled nil)
+;(put 'downcase-region 'disabled nil)
+;(put 'narrow-to-region 'disabled nil)
+
+;;
+;; Stuff for editing C programs.
+;;
+;; Firstly, here are two functions. The comments a C code line by
+;; prepending /* and appending */. The second undoes the first.
+;; We bind them to keys ion C mode below.
+;;
+;(defun c-comment-line ()
+;  (interactive)
+;  (beginning-of-line)
+;  (delete-horizontal-space)
+;  (insert-string "/* ")
+;  (end-of-line)
+;  (delete-horizontal-space)
+;  (insert-string " */")
+;  (c-indent-command))
+;
+;(defun c-uncomment-line ()
+;  (interactive)
+;  (beginning-of-line)
+;  (delete-horizontal-space)
+;  (if (looking-at "/\\* ")
+;      (delete-char 3))
+;  (let ((start (point)))
+;    (end-of-line)
+;    (delete-horizontal-space)
+;    (forward-char -3)
+;    (if (and (>= (point) start) (looking-at " \\*"))
+;	(delete-char 3)))
+;  (forward-char -1)
+;  (c-indent-command))
+;;;
+;; Make emacs treat _ and # as word characters. So M-f skips 
+;; underscores and the whole of #define etc.
+;;
+;(modify-syntax-entry ?# "w" c-mode-syntax-table)
+;(modify-syntax-entry ?_ "w" c-mode-syntax-table)
+;;
+;; Make RETURN insert a newline and indent to the proper place
+;; for the next line of code.
+;;
+;(define-key c-mode-map "\C-m" 'newline-and-indent)
+;;
+;; Set up C-c C-c so that it runs M-x compile (which does a make by default).
+;; Set C-c C-k to kill a currently running compilation.
+;;
+;(define-key c-mode-map "\C-c\C-c" 'compile)
+;(define-key c-mode-map "\C-c\C-k" 'kill-compilation)
+;;
+;; Use C-c c to comment out a line and C-c u to uncomment a 
+;; currently commented line.
+;;
+;(define-key c-mode-map "\C-cc" 'c-comment-line)
+;(define-key c-mode-map "\C-cu" 'c-uncomment-line)
+;;
+;; And these are settings for C style that I happen to use.
+;;
+;(setq c-indent-level 4)
+;(setq c-continued-statement-offset 4)
+;(setq c-brace-offset 0)
+;(setq c-continued-brace-offset -4)
+;(setq c-brace-imaginary-offset 0)
+;(setq c-argdecl-indent 0)
+;(setq c-label-offset 0)
+
+;;
+;; Finally, here are some X defaults that you might like to try.
+;; Comments in X resource files are begun with exclamation (!) marks.
+;;
+;; NOTE: You cannot uncomment these lines and leave them in this file.
+;;       They are X resources, not emacs lisp commands. If you don't
+;;       understand what this means, ask your system administrator.
+;;
+;emacs.cursorType: box
+;emacs.background: cornflowerblue
+;emacs.foreground: white
+;emacs.cursorColor: red
+;emacs.pointerColor: red
+;emacs.font: -sony-fixed-medium-r-normal-*-16-0-100-100-c-80-iso8859-1
+;! Some other fonts you might like to try.
+;!emacs.font: -adobe-courier-medium-r-normal-*-14-*-*-*-m-*-iso8859-1
+;!emacs.font: -schumacher-clean-medium-r-normal--16-160-75-75-c-80-iso8859-1
+;!emacs.font: -misc-fixed-medium-r-normal--13-120-*-*-c-*-iso8859-1
+;!emacs.font: -misc-fixed-medium-r-normal--15-140-*-*-c-*-iso8859-1
+;!emacs.font: -adobe-courier-medium-r-normal--14-140-*-*-m-*-iso8859-1
