@@ -1,1 +1,5 @@
-sfi-users
+*~
+*.elc
+old
+site-lisp
+site-lisp.orig
