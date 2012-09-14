@@ -912,7 +912,9 @@
 (iswitchb-mode t)
 (setq iswitchb-buffer-ignore '("\\\\*vc\\\\*" "\\\\*Completions\\\\*" "\\\\*Messages\\\\*" "^ "))
 
-(toggle-uniquify-buffer-names)
+(require 'uniquify)
+(setq uniquify-buffer-name-style 'post-forward-angle-brackets)
+
 (fset 'yes-or-no-p 'y-or-n-p )
 
 ;; (set-default 'tab-width 4)

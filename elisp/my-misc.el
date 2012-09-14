@@ -1,6 +1,6 @@
 (require 'my-shell)
 
-(setq *fluiddb-credentials* '("terrycojones" . "2soft2look4find"))
+(setq *fluiddb-credentials* '("terrycojones" . "***"))
 
 (defun insert-lastpage (who)
   (interactive "sInsert the last URL of which user? ")
